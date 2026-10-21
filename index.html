@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎮 GameZone — 5 игр</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+  body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    color: #fff;
+    overflow-x: hidden;
+  }
+  header { text-align: center; padding: 40px 20px 20px; }
+  header h1 {
+    font-size: 3rem;
+    background: linear-gradient(90deg, #ff6ec4, #7873f5, #4ade80);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  header p { color: #aaa; margin-top: 10px; font-size: 1.1rem; }
+  .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+  .games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+  }
+  .game-card {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.4s ease;
+  }
+  .game-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    border-color: #ff6ec4;
+    box-shadow: 0 20px 40px rgba(255,110,196,0.3);
+  }
+  .game-card .icon { font-size: 4rem; margin-bottom: 15px; }
+  .game-card h3 { font-size: 1.5rem; margin-bottom: 10px; }
+  .game-card p { color: #bbb; font-size: 0.95rem; }
+  .game-screen { display: none; text-align: center; padding: 20px; }
+  .game-screen.active { display: block; }
+  .back-btn {
+    background: linear-gradient(90deg, #ff6ec4, #7873f5);
+    color: white; border: none; padding: 10px 25px;
+    border-radius: 30px; cursor: pointer; font-size: 1rem; margin-bottom: 20px;
+  }
+  .game-title { font-size: 2.2rem; margin-bottom: 20px; color: #4ade80; }
+  .btn {
+    background: linear-gradient(90deg, #7873f5, #ff6ec4);
+    color: white; border: none; padding: 12px 28px;
+    border-radius: 30px; cursor: pointer; font-size: 1rem; margin: 8px;
+  }
+  #snakeCanvas { background: #1a1a2e; border: 2px solid #7873f5; border-radius: 10px; }
+  .score { font-size: 1.3rem; margin: 15px 0; color: #4ade80; }
+  .ttt-board { display: grid; grid-template-columns: repeat(3, 100px); gap: 8px; justify-content: center; margin: 20px auto; }
+  .ttt-cell {
+    width: 100px; height: 100px; background: rgba(255,255,255,0.08);
+    border: 2px solid #7873f5; border-radius: 12px; font-size: 2.5rem;
+    color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  #guessInput {
+    background: rgba(255,255,255,0.08); border: 2px solid #7873f5;
+    color: white; padding: 12px 20px; border-radius: 30px;
+    font-size: 1.1rem; width: 180px; text-align: center;
+  }
+  .rps-choices { display: flex; justify-content: center; gap: 20px; margin: 20px 0; }
+  .rps-btn {
+    font-size: 3rem; background: rgba(255,255,255,0.08);
+    border: 2px solid #7873f5; border-radius: 50%;
+    width: 90px; height: 90px; cursor: pointer;
+  }
+  .rps-result { font-size: 1.3rem; margin: 20px 0; min-height: 80px; }
+  .memory-board { display: grid; grid-template-columns: repeat(4, 80px); gap: 10px; justify-content: center; margin: 20px auto; }
+  .mem-card {
+    width: 80px; height: 80px; background: linear-gradient(135deg, #7873f5, #ff6ec4);
+    border-radius: 12px; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; font-size: 2rem; transition: transform 0.4s;
+  }
+  .mem-card.flipped { background: rgba(255,255,255,0.1); border: 2px solid #4ade80; }
+  .mem-card.matched { background: rgba(74,222,128,0.3); border: 2px solid #4ade80; cursor: default; }
+  footer { text-align: center; padding: 30px; color: #666; margin-top: 40px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎮 GameZone</h1>
+  <p>5 мини-игр в одном месте — выбирай и играй!</p>
+</header>
+<div class="container">
+  <div id="menu" class="games-grid">
+    <div class="game-card" onclick="openGame('snake')"><div class="icon">🐍</div><h3>Змейка</h3><p>Классика! Собирай еду и расти</p></div>
+    <div class="game-card" onclick="openGame('ttt')"><div class="icon">❌</div><h3>Крестики-нолики</h3><p>Сразись с компьютером</p></div>
+    <div class="game-card" onclick="openGame('guess')"><div class="icon">🔢</div><h3>Угадай число</h3><p>От 1 до 100 — угадай за минимум попыток</p></div>
+    <div class="game-card" onclick="openGame('rps')"><div class="icon">✊</div><h3>Камень-Ножницы-Бумага</h3><p>Битва с ИИ</p></div>
+    <div class="game-card" onclick="openGame('memory')"><div class="icon">🧠</div><h3>Memory</h3><p>Найди все пары карточек</p></div>
+  </div>
+
+  <div id="snake" class="game-screen">
+    <button class="back-btn" onclick="backToMenu()">← Назад</button>
+    <h2 class="game-title">🐍 Змейка</h2>
+    <div class="score">Счёт: <span id="snakeScore">0</span></div>
+    <canvas id="snakeCanvas" width="400" height="400"></canvas>
+    <p style="margin-top:15px;color:#aaa">Управление: стрелки на клавиатуре</p>
+    <button class="btn" onclick="startSnake()">Новая игра</button>
+  </div>
+
+  <div id="ttt" class="game-screen">
+    <button class="back-btn" onclick="backToMenu()">← Назад</button>
+    <h2 class="game-title">❌ Крестики-нолики</h2>
+    <div id="tttStatus" style="font-size:1.2rem;margin:10px 0">Твой ход (X)</div>
+    <div class="ttt-board" id="tttBoard"></div>
+    <button class="btn" onclick="startTTT()">Новая игра</button>
+  </div>
+
+  <div id="guess" class="game-screen">
+    <button class="back-btn" onclick="backToMenu()">← Назад</button>
+    <h2 class="game-title">🔢 Угадай число</h2>
+    <p>Я загадал число от 1 до 100</p>
+    <div style="margin:20px 0">
+      <input type="number" id="guessInput" min="1" max="100" placeholder="Твоё число">
+      <br><button class="btn" onclick="checkGuess()" style="margin-top:10px">Проверить</button>
+    </div>
+    <div id="guessMsg"></div>
+    <div class="score">Попыток: <span id="guessAttempts">0</span></div>
+    <button class="btn" onclick="startGuess()">Новая игра</button>
+  </div>
+
+  <div id="rps" class="game-screen">
+    <button class="back-btn" onclick="backToMenu()">← Назад</button>
+    <h2 class="game-title">✊ Камень-Ножницы-Бумага</h2>
+    <div class="score">Ты: <span id="rpsYou">0</span> | Компьютер: <span id="rpsCpu">0</span></div>
+    <div class="rps-choices">
+      <button class="rps-btn" onclick="playRPS('rock')">🪨</button>
+      <button class="rps-btn" onclick="playRPS('scissors')">✂️</button>
+      <button class="rps-btn" onclick="playRPS('paper')">📄</button>
+    </div>
+    <div class="rps-result" id="rpsResult">Выбери свой ход!</div>
+  </div>
+
+  <div id="memory" class="game-screen">
+    <button class="back-btn" onclick="backToMenu()">← Назад</button>
+    <h2 class="game-title">🧠 Memory</h2>
+    <div class="score">Ходов: <span id="memMoves">0</span> | Пар найдено: <span id="memPairs">0</span>/8</div>
+    <div class="memory-board" id="memBoard"></div>
+    <button class="btn" onclick="startMemory()">Новая игра</button>
+  </div>
+</div>
+<footer>Сделано с ❤️ — GameZone 2026</footer>
+
+<script>
+function openGame(id) {
+  document.getElementById('menu').style.display = 'none';
+  document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id === 'snake') startSnake();
+  if (id === 'ttt') startTTT();
+  if (id === 'guess') startGuess();
+  if (id === 'memory') startMemory();
+}
+function backToMenu() {
+  document.querySelectorAll('.game-screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('menu').style.display = 'grid';
+  if (snakeInterval) clearInterval(snakeInterval);
+}
+
+let snakeInterval, snake, food, dir, snakeScore;
+const canvas = document.getElementById('snakeCanvas');
+const ctx = canvas.getContext('2d');
+const grid = 20;
+function startSnake() {
+  if (snakeInterval) clearInterval(snakeInterval);
+  snake = [{x:10,y:10}]; dir = {x:1,y:0}; snakeScore = 0;
+  document.getElementById('snakeScore').textContent = 0;
+  placeFood(); snakeInterval = setInterval(snakeTick, 120);
+}
+function placeFood() { food = { x: Math.floor(Math.random()*20), y: Math.floor(Math.random()*20) }; }
+function snakeTick() {
+  const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+  if (head.x<0||head.x>=20||head.y<0||head.y>=20||snake.some(s=>s.x===head.x&&s.y===head.y)) {
+    clearInterval(snakeInterval);
+    ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(0,0,400,400);
+    ctx.fillStyle='#ff6ec4'; ctx.font='bold 30px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('Game Over!',200,200); return;
+  }
+  snake.unshift(head);
+  if (head.x===food.x && head.y===food.y) { snakeScore++; document.getElementById('snakeScore').textContent = snakeScore; placeFood(); } 
+  else snake.pop();
+  drawSnake();
+}
+function drawSnake() {
+  ctx.fillStyle='#1a1a2e'; ctx.fillRect(0,0,400,400);
+  ctx.fillStyle='#ff6ec4'; ctx.fillRect(food.x*grid, food.y*grid, grid-2, grid-2);
+  snake.forEach((s,i)=>{
+    const grad = ctx.createLinearGradient(s.x*grid,s.y*grid,s.x*grid+grid,s.y*grid+grid);
+    grad.addColorStop(0,'#7873f5'); grad.addColorStop(1,'#4ade80');
+    ctx.fillStyle = grad; ctx.fillRect(s.x*grid, s.y*grid, grid-2, grid-2);
+  });
+}
+document.addEventListener('keydown', e=>{
+  if (e.key==='ArrowUp' && dir.y===0) dir={x:0,y:-1};
+  if (e.key==='ArrowDown' && dir.y===0) dir={x:0,y:1};
+  if (e.key==='ArrowLeft' && dir.x===0) dir={x:-1,y:0};
+  if (e.key==='ArrowRight' && dir.x===0) dir={x:1,y:0};
+});
+
+let tttBoard, tttOver;
+function startTTT() {
+  tttBoard = Array(9).fill(''); tttOver = false;
+  document.getElementById('tttStatus').textContent = 'Твой ход (X)';
+  const board = document.getElementById('tttBoard'); board.innerHTML = '';
+  for (let i=0;i<9;i++) {
+    const c = document.createElement('div'); c.className = 'ttt-cell'; c.onclick = ()=>tttMove(i);
+    board.appendChild(c);
+  }
+}
+function tttMove(i) {
+  if (tttOver || tttBoard[i]) return;
+  tttBoard[i] = 'X'; renderTTT();
+  if (checkTTT('X')) { endTTT('Ты победил! 🎉'); return; }
+  if (tttBoard.every(c=>c)) { endTTT('Ничья 🤝'); return; }
+  setTimeout(tttAI, 400);
+}
+function tttAI() {
+  const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  let move = null;
+  for (const p of ['O','X']) {
+    for (const l of lines) {
+      const vals = l.map(i=>tttBoard[i]);
+      if (vals.filter(v=>v===p).length===2 && vals.includes('')) { move = l[vals.indexOf('')]; break; }
+    }
+    if (move!==null) break;
+  }
+  if (move===null && !tttBoard[4]) move = 4;
+  if (move===null) { const empty = tttBoard.map((v,i)=>v?null:i).filter(v=>v!==null); move = empty[Math.floor(Math.random()*empty.length)]; }
+  tttBoard[move] = 'O'; renderTTT();
+  if (checkTTT('O')) endTTT('Компьютер победил 🤖');
+  else if (tttBoard.every(c=>c)) endTTT('Ничья 🤝');
+}
+function renderTTT() {
+  const cells = document.querySelectorAll('.ttt-cell');
+  cells.forEach((c,i)=>{ c.textContent = tttBoard[i]; c.style.color = tttBoard[i]==='X' ? '#4ade80' : '#ff6ec4'; });
+}
+function checkTTT(p) {
+  const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  return lines.some(l=>l.every(i=>tttBoard[i]===p));
+}
+function endTTT(msg) { tttOver = true; document.getElementById('tttStatus').textContent = msg; }
+
+let guessTarget, guessAttempts;
+function startGuess() {
+  guessTarget = Math.floor(Math.random()*100)+1; guessAttempts = 0;
+  document.getElementById('guessAttempts').textContent = 0;
+  document.getElementById('guessMsg').textContent = '';
+  document.getElementById('guessInput').value = '';
+}
+function checkGuess() {
+  const v = parseInt(document.getElementById('guessInput').value);
+  if (!v || v<1 || v>100) { document.getElementById('guessMsg').textContent = '⚠️ Введи число от 1 до 100'; return; }
+  guessAttempts++; document.getElementById('guessAttempts').textContent = guessAttempts;
+  const msg = document.getElementById('guessMsg');
+  if (v === guessTarget) msg.innerHTML = `🎉 Угадал за ${guessAttempts} попыток!`;
+  else if (v < guessTarget) msg.textContent = '📈 Больше!';
+  else msg.textContent = '📉 Меньше!';
+}
+
+let rpsYou=0, rpsCpu=0;
+const rpsEmoji = {rock:'🪨', scissors:'✂️', paper:'📄'};
+function playRPS(choice) {
+  const opts = ['rock','scissors','paper'];
+  const cpu = opts[Math.floor(Math.random()*3)];
+  let result;
+  if (choice === cpu) result = 'Ничья 🤝';
+  else if ((choice==='rock'&&cpu==='scissors')||(choice==='scissors'&&cpu==='paper')||(choice==='paper'&&cpu==='rock')) {
+    result = 'Ты выиграл! 🎉'; rpsYou++;
+  } else { result = 'Компьютер выиграл 🤖'; rpsCpu++; }
+  document.getElementById('rpsYou').textContent = rpsYou;
+  document.getElementById('rpsCpu').textContent = rpsCpu;
+  document.getElementById('rpsResult').innerHTML = `Ты: ${rpsEmoji[choice]} vs Компьютер: ${rpsEmoji[cpu]}<br><b>${result}</b>`;
+}
+
+let memCards, memFlipped, memMatched, memMoves, memLock;
+function startMemory() {
+  const emojis = ['🎮','🎲','🎯','🎨','🎭','🎪','🎸','🎺'];
+  memCards = [...emojis, ...emojis].sort(()=>Math.random()-0.5);
+  memFlipped = []; memMatched = []; memMoves = 0; memLock = false;
+  document.getElementById('memMoves').textContent = 0;
+  document.getElementById('memPairs').textContent = 0;
+  const board = document.getElementById('memBoard'); board.innerHTML = '';
+  memCards.forEach((e,i)=>{
+    const c = document.createElement('div'); c.className = 'mem-card'; c.dataset.idx = i;
+    c.onclick = ()=>flipMem(c,i); board.appendChild(c);
+  });
+}
+function flipMem(el, i) {
+  if (memLock || memFlipped.length>=2 || memFlipped.includes(i) || memMatched.includes(i)) return;
+  el.textContent = memCards[i]; el.classList.add('flipped'); memFlipped.push(i);
+  if (memFlipped.length === 2) {
+    memMoves++; document.getElementById('memMoves').textContent = memMoves;
+    const [a,b] = memFlipped;
+    if (memCards[a] === memCards[b]) {
+      memMatched.push(a,b);
+      document.querySelectorAll('.mem-card').forEach(c=>{ if (memMatched.includes(+c.dataset.idx)) c.classList.add('matched'); });
+      document.getElementById('memPairs').textContent = memMatched.length/2;
+      memFlipped = [];
+      if (memMatched.length === memCards.length) setTimeout(()=>alert(`🎉 Победа за ${memMoves} ходов!`), 300);
+    } else {
+      memLock = true;
+      setTimeout(()=>{
+        document.querySelectorAll('.mem-card').forEach(c=>{
+          if (!memMatched.includes(+c.dataset.idx)) { c.classList.remove('flipped'); c.textContent = ''; }
+        });
+        memFlipped = []; memLock = false;
+      }, 800);
+    }
+  }
+}
+</script>
+</body>
+</html>
