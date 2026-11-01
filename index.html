@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Неоновый Кроссворд</title>
+    <title>Неоновая Судоку</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
@@ -34,102 +34,174 @@
             to { text-shadow: 0 0 20px #ff00ff, 0 0 40px #ff00ff; }
         }
 
-        .subtitle {
-            color: #ff00ff;
-            font-size: 1rem;
-            margin-bottom: 30px;
-            letter-spacing: 2px;
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
-        .crossword {
+        .timer {
+            font-size: 1.5rem;
+            color: #ffff00;
+            text-shadow: 0 0 10px #ffff00;
+            margin-bottom: 15px;
+        }
+
+        .difficulty {
             display: flex;
             gap: 10px;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
+        }
+
+        .diff-btn {
+            background: transparent;
+            border: 2px solid #ff00ff;
+            color: #ff00ff;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .diff-btn:hover, .diff-btn.active {
+            background: #ff00ff;
+            color: #000;
+            box-shadow: 0 0 15px #ff00ff;
+        }
+
+        .sudoku-grid {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 2px;
+            background: rgba(0, 255, 255, 0.2);
+            padding: 2px;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            margin-bottom: 20px;
         }
 
         .cell {
-            width: 60px;
-            height: 60px;
-            background: rgba(0, 255, 255, 0.05);
-            border: 2px solid #00ffff;
-            border-radius: 8px;
+            width: 45px;
+            height: 45px;
+            background: rgba(10, 10, 15, 0.9);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
+            font-size: 1.3rem;
             font-weight: bold;
-            color: #fff;
-            text-transform: uppercase;
-            transition: all 0.3s;
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
         }
 
-        .cell:focus {
-            outline: none;
-            border-color: #ff00ff;
-            box-shadow: 0 0 20px #ff00ff;
-            transform: scale(1.1);
+        .cell:hover {
+            background: rgba(0, 255, 255, 0.1);
         }
 
-        .cell.correct {
-            border-color: #00ff00;
-            box-shadow: 0 0 20px #00ff00;
-            background: rgba(0, 255, 0, 0.1);
+        .cell.selected {
+            background: rgba(255, 0, 255, 0.2);
+            box-shadow: inset 0 0 10px #ff00ff;
         }
 
-        .cell.wrong {
-            border-color: #ff0000;
-            box-shadow: 0 0 20px #ff0000;
+        .cell.given {
+            color: #00ffff;
+            text-shadow: 0 0 5px #00ffff;
+        }
+
+        .cell.user-input {
+            color: #ff00ff;
+        }
+
+        .cell.error {
+            color: #ff0000;
             animation: shake 0.5s;
+        }
+
+        .cell.highlight {
+            background: rgba(0, 255, 255, 0.05);
+        }
+
+        /* 3x3 block borders */
+        .cell:nth-child(3n) {
+            border-right: 2px solid rgba(0, 255, 255, 0.5);
+        }
+        .cell:nth-child(n+19):nth-child(-n+27),
+        .cell:nth-child(n+46):nth-child(-n+54) {
+            border-bottom: 2px solid rgba(0, 255, 255, 0.5);
         }
 
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
+            25% { transform: translateX(-3px); }
+            75% { transform: translateX(3px); }
         }
 
-        .hint {
-            background: rgba(255, 0, 255, 0.1);
-            border: 1px solid #ff00ff;
-            padding: 15px 25px;
-            border-radius: 8px;
+        .number-pad {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
             margin-bottom: 20px;
-            font-size: 1.1rem;
-            text-align: center;
-            max-width: 500px;
-            box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
         }
 
-        .hint span {
-            color: #ffff00;
+        .num-btn {
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 212, 255, 0.1);
+            border: 2px solid #00d4ff;
+            color: #00d4ff;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
             font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .num-btn:hover {
+            background: #00d4ff;
+            color: #000;
+            box-shadow: 0 0 15px #00d4ff;
+        }
+
+        .num-btn.erase {
+            background: rgba(255, 0, 85, 0.1);
+            border-color: #ff0055;
+            color: #ff0055;
+        }
+
+        .num-btn.erase:hover {
+            background: #ff0055;
+            color: #fff;
+            box-shadow: 0 0 15px #ff0055;
         }
 
         .btn {
             background: transparent;
             border: 2px solid #00ffff;
             color: #00ffff;
-            padding: 12px 30px;
+            padding: 10px 20px;
             border-radius: 8px;
             font-family: 'Orbitron', sans-serif;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
-            margin: 0 10px;
         }
 
         .btn:hover {
             background: #00ffff;
             color: #000;
-            box-shadow: 0 0 20px #00ffff;
+            box-shadow: 0 0 15px #00ffff;
         }
 
         .message {
-            margin-top: 20px;
-            font-size: 1.2rem;
-            min-height: 30px;
+            margin-top: 15px;
+            font-size: 1.1rem;
+            min-height: 25px;
             text-align: center;
         }
 
@@ -138,131 +210,306 @@
             text-shadow: 0 0 10px #00ff00;
         }
 
-        .message.error {
-            color: #ff0000;
-            text-shadow: 0 0 10px #ff0000;
-        }
-
         @media (max-width: 600px) {
             h1 { font-size: 1.8rem; }
-            .cell { width: 50px; height: 50px; font-size: 1.5rem; }
-            .crossword { gap: 5px; }
+            .cell { width: 35px; height: 35px; font-size: 1rem; }
+            .num-btn { width: 40px; height: 40px; font-size: 1.1rem; }
         }
     </style>
 </head>
 <body>
-    <h1>НЕОНОВЫЙ КРОССВОРД</h1>
-    <p class="subtitle">УГАДАЙ СЛОВО ИЗ 5 БУКВ</p>
+    <h1>НЕОНОВАЯ СУДОКУ</h1>
+    
+    <div class="timer" id="timer">00:00</div>
 
-    <div class="hint">
-        💡 Подсказка: <span id="hint-text">Загрузка...</span>
+    <div class="difficulty">
+        <button class="diff-btn active" onclick="setDifficulty('easy')">Легко</button>
+        <button class="diff-btn" onclick="setDifficulty('medium')">Средне</button>
+        <button class="diff-btn" onclick="setDifficulty('hard')">Сложно</button>
     </div>
 
-    <div class="crossword" id="crossword"></div>
+    <div class="sudoku-grid" id="grid"></div>
 
-    <div>
-        <button class="btn" onclick="checkAnswer()">ПРОВЕРИТЬ</button>
-        <button class="btn" onclick="newWord()">НОВОЕ СЛОВО</button>
+    <div class="number-pad">
+        <button class="num-btn" onclick="inputNumber(1)">1</button>
+        <button class="num-btn" onclick="inputNumber(2)">2</button>
+        <button class="num-btn" onclick="inputNumber(3)">3</button>
+        <button class="num-btn" onclick="inputNumber(4)">4</button>
+        <button class="num-btn" onclick="inputNumber(5)">5</button>
+        <button class="num-btn" onclick="inputNumber(6)">6</button>
+        <button class="num-btn" onclick="inputNumber(7)">7</button>
+        <button class="num-btn" onclick="inputNumber(8)">8</button>
+        <button class="num-btn" onclick="inputNumber(9)">9</button>
+        <button class="num-btn erase" onclick="inputNumber(0)">✕</button>
+    </div>
+
+    <div class="controls">
+        <button class="btn" onclick="checkSolution()">ПРОВЕРИТЬ</button>
+        <button class="btn" onclick="newGame()">НОВАЯ ИГРА</button>
+        <button class="btn" onclick="showHint()">ПОДСКАЗКА</button>
     </div>
 
     <div class="message" id="message"></div>
 
     <script>
-        const words = [
-            { word: 'КОДЕК', hint: 'Программист, который пишет код' },
-            { word: 'ИГРОК', hint: 'Тот, кто играет в игры' },
-            { word: 'СЕРВЕР', hint: 'Компьютер, который хранит данные (6 букв)' },
-            { word: 'КЛАВИШ', hint: 'Кнопка на клавиатуре' },
-            { word: 'МОНИТОР', hint: 'Экран компьютера (7 букв)' },
-            { word: 'ПРОЦЕСС', hint: 'Выполняемая программа' },
-            { word: 'ПАМЯТЬ', hint: 'Хранилище данных в компьютере (6 букв)' },
-            { word: 'ДИСПЛЕЙ', hint: 'Экран устройства (7 букв)' },
-            { word: 'КУРСОР', hint: 'Указатель на экране (6 букв)' },
-            { word: 'ФАЙЛЫ', hint: 'Документы на компьютере' }
-        ];
+        let board = [];
+        let solution = [];
+        let selectedCell = null;
+        let difficulty = 'easy';
+        let timerInterval;
+        let seconds = 0;
 
-        let currentWord = null;
-        let cells = [];
-
-        function initGame() {
-            newWord();
-        }
-
-        function newWord() {
-            currentWord = words[Math.floor(Math.random() * words.length)];
-            document.getElementById('hint-text').textContent = currentWord.hint;
-            document.getElementById('message').textContent = '';
-            document.getElementById('message').className = 'message';
+        // Sudoku generator
+        function generateSudoku() {
+            // Create empty 9x9 grid
+            let grid = Array(9).fill().map(() => Array(9).fill(0));
             
-            const crossword = document.getElementById('crossword');
-            crossword.innerHTML = '';
-            cells = [];
-
-            for (let i = 0; i < currentWord.word.length; i++) {
-                const cell = document.createElement('input');
-                cell.type = 'text';
-                cell.maxLength = 1;
-                cell.className = 'cell';
-                cell.dataset.index = i;
-                
-                cell.addEventListener('input', (e) => {
-                    e.target.value = e.target.value.toUpperCase();
-                    if (e.target.value && i < currentWord.word.length - 1) {
-                        cells[i + 1].focus();
-                    }
-                });
-
-                cell.addEventListener('keydown', (e) => {
-                    if (e.key === 'Backspace' && !e.target.value && i > 0) {
-                        cells[i - 1].focus();
-                    }
-                });
-
-                crossword.appendChild(cell);
-                cells.push(cell);
+            // Fill diagonal 3x3 boxes first (they are independent)
+            for (let i = 0; i < 9; i += 3) {
+                fillBox(grid, i, i);
             }
-
-            cells[0].focus();
+            
+            // Solve the rest
+            solveSudoku(grid);
+            
+            return grid;
         }
 
-        function checkAnswer() {
-            const answer = cells.map(c => c.value).join('');
-            const message = document.getElementById('message');
-
-            if (answer.length < currentWord.word.length) {
-                message.textContent = 'Заполни все клетки!';
-                message.className = 'message error';
-                return;
+        function fillBox(grid, row, col) {
+            let nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+            shuffleArray(nums);
+            let idx = 0;
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    grid[row + i][col + j] = nums[idx++];
+                }
             }
+        }
 
-            if (answer === currentWord.word) {
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function solveSudoku(grid) {
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    if (grid[row][col] === 0) {
+                        let nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                        shuffleArray(nums);
+                        for (let num of nums) {
+                            if (isValid(grid, row, col, num)) {
+                                grid[row][col] = num;
+                                if (solveSudoku(grid)) return true;
+                                grid[row][col] = 0;
+                            }
+                        }
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function isValid(grid, row, col, num) {
+            // Check row
+            for (let x = 0; x < 9; x++) {
+                if (grid[row][x] === num) return false;
+            }
+            // Check column
+            for (let x = 0; x < 9; x++) {
+                if (grid[x][col] === num) return false;
+            }
+            // Check 3x3 box
+            let startRow = row - row % 3;
+            let startCol = col - col % 3;
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (grid[i + startRow][j + startCol] === num) return false;
+                }
+            }
+            return true;
+        }
+
+        function removeNumbers(grid, count) {
+            let cells = [];
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    cells.push([i, j]);
+                }
+            }
+            shuffleArray(cells);
+            
+            for (let i = 0; i < count; i++) {
+                let [row, col] = cells[i];
+                grid[row][col] = 0;
+            }
+        }
+
+        function setDifficulty(diff) {
+            difficulty = diff;
+            document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            newGame();
+        }
+
+        function newGame() {
+            // Generate solution
+            solution = generateSudoku();
+            board = solution.map(row => [...row]);
+            
+            // Remove numbers based on difficulty
+            let removeCount = difficulty === 'easy' ? 40 : difficulty === 'medium' ? 50 : 60;
+            removeNumbers(board, removeCount);
+            
+            // Reset timer
+            seconds = 0;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+            updateTimer();
+            
+            renderGrid();
+            document.getElementById('message').textContent = '';
+        }
+
+        function renderGrid() {
+            const gridEl = document.getElementById('grid');
+            gridEl.innerHTML = '';
+            
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.row = row;
+                    cell.dataset.col = col;
+                    
+                    const value = board[row][col];
+                    if (value !== 0) {
+                        cell.textContent = value;
+                        // Check if it's a given number (from solution)
+                        if (solution[row][col] === value && isGiven(row, col)) {
+                            cell.classList.add('given');
+                        } else {
+                            cell.classList.add('user-input');
+                        }
+                    }
+                    
+                    cell.onclick = () => selectCell(row, col);
+                    gridEl.appendChild(cell);
+                }
+            }
+        }
+
+        function isGiven(row, col) {
+            // Simple check: if we generated the puzzle, we know which cells were given
+            // For simplicity, we'll track this differently
+            return true; // Placeholder
+        }
+
+        function selectCell(row, col) {
+            document.querySelectorAll('.cell').forEach(c => {
+                c.classList.remove('selected');
+                c.classList.remove('highlight');
+            });
+            
+            const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+            cell.classList.add('selected');
+            selectedCell = { row, col };
+            
+            // Highlight same row, column, and box
+            for (let i = 0; i < 9; i++) {
+                document.querySelector(`[data-row="${row}"][data-col="${i}"]`).classList.add('highlight');
+                document.querySelector(`[data-row="${i}"][data-col="${col}"]`).classList.add('highlight');
+            }
+            
+            let startRow = row - row % 3;
+            let startCol = col - col % 3;
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    document.querySelector(`[data-row="${startRow + i}"][data-col="${startCol + j}"]`).classList.add('highlight');
+                }
+            }
+        }
+
+        function inputNumber(num) {
+            if (!selectedCell) return;
+            
+            const { row, col } = selectedCell;
+            
+            // Can't change given numbers
+            if (isGiven(row, col)) return;
+            
+            board[row][col] = num;
+            renderGrid();
+            selectCell(row, col);
+        }
+
+        function checkSolution() {
+            let isComplete = true;
+            let isCorrect = true;
+            
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    if (board[row][col] === 0) {
+                        isComplete = false;
+                    } else if (board[row][col] !== solution[row][col]) {
+                        isCorrect = false;
+                        const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                        cell.classList.add('error');
+                        setTimeout(() => cell.classList.remove('error'), 1000);
+                    }
+                }
+            }
+            
+            const message = document.getElementById('message');
+            if (!isComplete) {
+                message.textContent = 'Заполни все клетки!';
+                message.className = 'message';
+            } else if (isCorrect) {
                 message.textContent = '🎉 ПРАВИЛЬНО! Отлично!';
                 message.className = 'message success';
-                cells.forEach(c => c.classList.add('correct'));
-                
-                setTimeout(() => {
-                    if (confirm('Хочешь ещё одно слово?')) {
-                        newWord();
-                    }
-                }, 1500);
+                clearInterval(timerInterval);
             } else {
-                message.textContent = '❌ Неправильно, попробуй ещё!';
-                message.className = 'message error';
-                cells.forEach(c => {
-                    c.classList.add('wrong');
-                    setTimeout(() => c.classList.remove('wrong'), 500);
-                });
+                message.textContent = 'Есть ошибки, проверь красные клетки';
+                message.className = 'message';
             }
         }
 
-        // Enter key to check
+        function showHint() {
+            if (!selectedCell) return;
+            
+            const { row, col } = selectedCell;
+            if (isGiven(row, col)) return;
+            
+            board[row][col] = solution[row][col];
+            renderGrid();
+            selectCell(row, col);
+        }
+
+        function updateTimer() {
+            seconds++;
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            document.getElementById('timer').textContent = 
+                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Keyboard input
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                checkAnswer();
+            if (!selectedCell) return;
+            
+            const num = parseInt(e.key);
+            if (num >= 1 && num <= 9) {
+                inputNumber(num);
+            } else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') {
+                inputNumber(0);
             }
         });
 
-        initGame();
+        // Start game
+        newGame();
     </script>
 </body>
 </html>
