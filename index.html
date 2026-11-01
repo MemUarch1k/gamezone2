@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Неоновая Судоку Pro</title>
-    <!-- Здесь будет подключен SDK Яндекс Игр при публикации -->
-    <!-- <script src="https://yandex.ru/games/sdk/v2"></script> -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
         :root {
-            /* Дефолтный скин: Cyberpunk */
             --neon-primary: #00ffff;
             --neon-secondary: #ff00ff;
             --neon-accent: #ffff00;
@@ -19,7 +16,6 @@
             --grid-line: rgba(0, 255, 255, 0.2);
         }
 
-        /* СКИНЫ */
         body.skin-matrix {
             --neon-primary: #00ff00;
             --neon-secondary: #003300;
@@ -119,7 +115,6 @@
         .cell.error { color: #ff0000; animation: shake 0.4s; }
         .cell.highlight { background: rgba(255, 255, 255, 0.03); }
 
-        /* Анимация мигания для подсказки */
         @keyframes hintBlink {
             0%, 100% { background: rgba(255, 255, 0, 0.1); color: var(--neon-accent); box-shadow: 0 0 5px var(--neon-accent); transform: scale(1); }
             50% { background: rgba(255, 255, 0, 0.4); color: #fff; box-shadow: 0 0 20px var(--neon-accent); transform: scale(1.05); }
@@ -204,7 +199,8 @@
             .cell { width: 34px; height: 34px; font-size: 1rem; }
             h1 { font-size: 1.5rem; }
         }
-    </style</head>
+    </style>
+</head>
 <body>
     <h1>NEON SUDOKU</h1>
     <div class="level-info">Уровень: <span id="level-display">1</span></div>
@@ -233,28 +229,23 @@
     <div class="message" id="message"></div>
 
     <script>
-        // --- Глобальные переменные ---
         let board = [];
         let solution = [];
         let isFixed = [];
         let selectedCell = null;
         let currentLevel = 1;
         
-        // Система подсказок
         const MAX_DAILY_HINTS = 3;
         let hintData = { date: new Date().toDateString(), count: 0 };
 
-        // Скины
         const skins = ['', 'skin-matrix', 'skin-sunset', 'skin-ice'];
 
-        // --- Инициализация ---
         function init() {
             loadProgress();
             applyRandomSkin();
             updateHintUI();
-            newGame(false); // false = не сбрасывать уровень
+            newGame(false);
             
-            // Обработка клавиатуры
             document.addEventListener('keydown', (e) => {
                 if (!selectedCell) return;
                 const num = parseInt(e.key);
@@ -270,7 +261,6 @@
             const savedHints = localStorage.getItem('neonSudokuHints');
             if (savedHints) {
                 hintData = JSON.parse(savedHints);
-                // Сброс счетчика, если наступил новый день
                 if (hintData.date !== new Date().toDateString()) {
                     hintData = { date: new Date().toDateString(), count: 0 };
                     saveHints();
@@ -293,16 +283,13 @@
         }
 
         function applyRandomSkin() {
-            // Убираем старые классы скинов
             skins.forEach(s => { if(s) document.body.classList.remove(s); });
-            // Выбираем случайный
             const randomSkin = skins[Math.floor(Math.random() * skins.length)];
             if (randomSkin) {
                 document.body.classList.add(randomSkin);
             }
         }
 
-        // --- Генерация Судоку ---
         function generateSudoku() {
             let grid = Array(9).fill().map(() => Array(9).fill(0));
             for (let i = 0; i < 9; i += 3) fillBox(grid, i, i);
@@ -373,7 +360,6 @@
             board = solution.map(row => [...row]);
             isFixed = Array(9).fill().map(() => Array(9).fill(true));
 
-            // Сложность растет с уровнем (максимум 60 удаленных клеток)
             let removeCount = Math.min(35 + (currentLevel * 2), 60);
             let cells = [];
             for (let i = 0; i < 9; i++) {
@@ -423,7 +409,6 @@
             cell.classList.add('selected');
             selectedCell = { row, col };
             
-            // Подсветка
             for (let i = 0; i < 9; i++) {
                 document.querySelector(`[data-row="${row}"][data-col="${i}"]`).classList.add('highlight');
                 document.querySelector(`[data-row="${i}"][data-col="${col}"]`).classList.add('highlight');
@@ -443,40 +428,32 @@
             selectCell(selectedCell.row, selectedCell.col);
         }
 
-        // --- УМНАЯ СИСТЕМА ПОДСКАЗОК ---
         function requestHint() {
-            // 1. Проверка лимита
             if (hintData.count >= MAX_DAILY_HINTS) {
-                // ЗДЕСЬ БУДЕТ ВЫЗОВ РЕКЛАМЫ ЯНДЕКС ИГР
-                // ysdk.adv.showRewardedVideo({ callbacks: { onRewarded: () => giveHint() } });
                 showMockAdAndGiveHint();
                 return;
             }
 
-            // 2. Если лимит не исчерпан, даем бесплатно
             hintData.count++;
             saveHints();
             executeHintAnimation();
         }
 
-        // Имитация рекламы для тестов на компьютере
         function showMockAdAndGiveHint() {
             showMessage('📺 Загрузка рекламы... (посмотри 3 сек)');
             setTimeout(() => {
                 showMessage('✅ Спасибо за просмотр! Подсказка активирована.');
                 executeHintAnimation();
-            }, 3000); // 3 секунды имитации рекламы
+            }, 3000);
         }
 
         function executeHintAnimation() {
             let targetRow, targetCol;
 
-            // Если клетка выбрана и пуста, используем её
             if (selectedCell && board[selectedCell.row][selectedCell.col] === 0) {
                 targetRow = selectedCell.row;
                 targetCol = selectedCell.col;
             } else {
-                // Иначе ищем случайную пустую клетку
                 let emptyCells = [];
                 for (let r = 0; r < 9; r++) {
                     for (let c = 0; c < 9; c++) {
@@ -490,28 +467,23 @@
                 let randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
                 targetRow = randomCell.r;
                 targetCol = randomCell.c;
-                
-                // Автоматически выбираем эту клетку для удобства
                 selectedCell = { row: targetRow, col: targetCol };
             }
 
-            // 3. Запускаем анимацию мигания
             const cellEl = document.querySelector(`[data-row="${targetRow}"][data-col="${targetCol}"]`);
             cellEl.classList.add('hint-blinking');
             showMessage('🔍 Сканирование поля...');
 
-            // 4. Через 1.5 секунды показываем цифру
             setTimeout(() => {
                 cellEl.classList.remove('hint-blinking');
                 board[targetRow][targetCol] = solution[targetRow][targetCol];
-                isFixed[targetRow][targetCol] = true; // Делаем её "данной", чтобы нельзя было стереть
+                isFixed[targetRow][targetCol] = true;
                 renderGrid();
                 selectCell(targetRow, targetCol);
                 showMessage('✅ Подсказка применена!');
             }, 1500);
         }
 
-        // --- ПРОВЕРКА И ПЕРЕХОД ПО УРОВНЯМ ---
         function checkSolution() {
             let isComplete = true;
             let isCorrect = true;
@@ -542,12 +514,8 @@
         }
 
         function levelUp() {
-            // ПРОВЕРКА НА МЕЖСТРАНИЧНУЮ РЕКЛАМУ (каждые 3 уровня)
             if (currentLevel % 3 === 0) {
                 showMessage('📺 Показ межстраничной рекламы...');
-                // ЗДЕСЬ БУДЕТ: ysdk.adv.showFullscreenAdv({ callbacks: { onClose: () => proceedToNextLevel() } });
-                
-                // Имитация для тестов:
                 setTimeout(() => {
                     proceedToNextLevel();
                 }, 2000);
@@ -560,10 +528,7 @@
             currentLevel++;
             saveProgress();
             document.getElementById('level-display').textContent = currentLevel;
-            
-            // Меняем скин при переходе на новый уровень для разнообразия
             applyRandomSkin();
-            
             newGame(false);
         }
 
@@ -571,7 +536,6 @@
             document.getElementById('message').textContent = text;
         }
 
-        // Запуск
         init();
     </script>
 </body>
