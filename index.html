@@ -2,564 +2,266 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tactical Neon Command</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Неоновый Кроссворд</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
-        :root {
-            --bg-dark: #0a0b10;
-            --bg-panel: #14161f;
-            --neon-green: #00ff9d;
-            --neon-red: #ff0055;
-            --neon-blue: #00d4ff;
-            --neon-yellow: #ffcc00;
-            --grid-line: rgba(0, 212, 255, 0.15);
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
-        
         body {
-            font-family: 'Share Tech Mono', monospace;
-            background-color: var(--bg-dark);
-            color: #e0e0e0;
-            height: 100vh;
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a0a2e 100%);
+            color: #fff;
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
-        }
-
-        /* --- Header / Resources --- */
-        .header {
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 10px 15px;
-            background: var(--bg-panel);
-            border-bottom: 1px solid var(--neon-blue);
-            box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
-            z-index: 10;
-        }
-
-        .res-box {
-            display: flex;
-            gap: 15px;
-            font-size: 1.1rem;
-        }
-
-        .res { display: flex; align-items: center; gap: 5px; }
-        .res.energy { color: var(--neon-yellow); }
-        .res.materials { color: var(--neon-blue); }
-        .res.units { color: var(--neon-green); }
-
-        .audio-btn {
-            background: transparent;
-            border: 1px solid var(--neon-red);
-            color: var(--neon-red);
-            padding: 5px 10px;
-            font-family: inherit;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: all 0.3s;
-        }
-        .audio-btn.active {
-            border-color: var(--neon-green);
-            color: var(--neon-green);
-            box-shadow: 0 0 10px var(--neon-green);
-        }
-
-        /* --- Game Grid --- */
-        .game-area {
-            flex: 1;
-            display: flex;
             justify-content: center;
-            align-items: center;
-            padding: 10px;
-            position: relative;
+            padding: 20px;
         }
 
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(10, 1fr);
-            grid-template-rows: repeat(10, 1fr);
-            gap: 2px;
-            width: 100%;
-            max-width: 500px;
-            aspect-ratio: 1 / 1;
-            background: var(--grid-line);
-            border: 1px solid var(--neon-blue);
-            padding: 2px;
-            border-radius: 4px;
+        h1 {
+            font-size: 2.5rem;
+            color: #00ffff;
+            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+            margin-bottom: 10px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff; }
+            to { text-shadow: 0 0 20px #ff00ff, 0 0 40px #ff00ff; }
+        }
+
+        .subtitle {
+            color: #ff00ff;
+            font-size: 1rem;
+            margin-bottom: 30px;
+            letter-spacing: 2px;
+        }
+
+        .crossword {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
         }
 
         .cell {
-            background: rgba(10, 11, 16, 0.8);
-            border: 1px solid rgba(0, 212, 255, 0.1);
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 255, 255, 0.05);
+            border: 2px solid #00ffff;
+            border-radius: 8px;
             display: flex;
-            justify-content: center;
             align-items: center;
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-        }
-
-        .cell:hover { background: rgba(0, 212, 255, 0.1); }
-        .cell.selected { border-color: var(--neon-yellow); box-shadow: inset 0 0 10px var(--neon-yellow); }
-        .cell.enemy { background: rgba(255, 0, 85, 0.2); border-color: var(--neon-red); animation: pulseRed 1s infinite; }
-        .cell.base { background: rgba(0, 255, 157, 0.15); border-color: var(--neon-green); }
-
-        @keyframes pulseRed {
-            0%, 100% { box-shadow: 0 0 5px var(--neon-red); }
-            50% { box-shadow: 0 0 15px var(--neon-red); }
-        }
-
-        /* --- Build Menu --- */
-        .build-menu {
-            display: flex;
-            justify-content: space-around;
-            padding: 10px;
-            background: var(--bg-panel);
-            border-top: 1px solid var(--neon-blue);
-        }
-
-        .build-btn {
-            background: rgba(0, 212, 255, 0.05);
-            border: 1px solid var(--neon-blue);
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
             color: #fff;
-            padding: 10px 5px;
-            border-radius: 6px;
-            cursor: pointer;
-            text-align: center;
-            width: 23%;
-            transition: all 0.2s;
-            font-family: inherit;
+            text-transform: uppercase;
+            transition: all 0.3s;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
         }
 
-        .build-btn:active { transform: scale(0.95); }
-        .build-btn.active {
-            background: var(--neon-blue);
-            color: #000;
-            box-shadow: 0 0 15px var(--neon-blue);
+        .cell:focus {
+            outline: none;
+            border-color: #ff00ff;
+            box-shadow: 0 0 20px #ff00ff;
+            transform: scale(1.1);
+        }
+
+        .cell.correct {
+            border-color: #00ff00;
+            box-shadow: 0 0 20px #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        .cell.wrong {
+            border-color: #ff0000;
+            box-shadow: 0 0 20px #ff0000;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .hint {
+            background: rgba(255, 0, 255, 0.1);
+            border: 1px solid #ff00ff;
+            padding: 15px 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            text-align: center;
+            max-width: 500px;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+        }
+
+        .hint span {
+            color: #ffff00;
             font-weight: bold;
         }
-        .build-btn .cost { font-size: 0.7rem; opacity: 0.8; display: block; margin-top: 4px; }
-        .build-btn:disabled { opacity: 0.3; cursor: not-allowed; border-color: #555; }
 
-        /* --- Notifications --- */
-        .notification {
-            position: absolute;
-            top: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            border: 1px solid var(--neon-yellow);
-            color: var(--neon-yellow);
-            padding: 8px 16px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-            z-index: 20;
+        .btn {
+            background: transparent;
+            border: 2px solid #00ffff;
+            color: #00ffff;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 0 10px;
         }
-        .notification.show { opacity: 1; }
 
-        /* CRT Overlay */
-        .crt::before {
-            content: " ";
-            display: block;
-            position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
-            background-size: 100% 4px;
-            z-index: 50;
-            pointer-events: none;
+        .btn:hover {
+            background: #00ffff;
+            color: #000;
+            box-shadow: 0 0 20px #00ffff;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            min-height: 30px;
+            text-align: center;
+        }
+
+        .message.success {
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00;
+        }
+
+        .message.error {
+            color: #ff0000;
+            text-shadow: 0 0 10px #ff0000;
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 1.8rem; }
+            .cell { width: 50px; height: 50px; font-size: 1.5rem; }
+            .crossword { gap: 5px; }
         }
     </style>
 </head>
-<body class="crt">
+<body>
+    <h1>НЕОНОВЫЙ КРОССВОРД</h1>
+    <p class="subtitle">УГАДАЙ СЛОВО ИЗ 5 БУКВ</p>
 
-    <div class="header">
-        <div class="res-box">
-            <div class="res energy">⚡ <span id="res-energy">100</span></div>
-            <div class="res materials">🔩 <span id="res-mat">100</span></div>
-            <div class="res units">👤 <span id="res-units">0</span>/100</div>
-        </div>
-        <button class="audio-btn" id="audioBtn" onclick="toggleAudio()">🔇 ЗВУК</button>
+    <div class="hint">
+        💡 Подсказка: <span id="hint-text">Загрузка...</span>
     </div>
 
-    <div class="notification" id="notification">Сообщение</div>
+    <div class="crossword" id="crossword"></div>
 
-    <div class="game-area">
-        <div class="grid" id="grid"></div>
+    <div>
+        <button class="btn" onclick="checkAnswer()">ПРОВЕРИТЬ</button>
+        <button class="btn" onclick="newWord()">НОВОЕ СЛОВО</button>
     </div>
 
-    <div class="build-menu">
-        <button class="build-btn" onclick="selectBuild('mine')" id="btn-mine">
-            ⛏️ Шахта
-            <span class="cost">⚡20 🔩30</span>
-        </button>
-        <button class="build-btn" onclick="selectBuild('barracks')" id="btn-barracks">
-            🏰 Казарма
-            <span class="cost">⚡30 🔩50</span>
-        </button>
-        <button class="build-btn" onclick="selectBuild('turret')" id="btn-turret">
-            🔫 Турель
-            <span class="cost">⚡40 🔩40</span>
-        </button>
-        <button class="build-btn" onclick="selectBuild('unit')" id="btn-unit">
-            🤖 Юнит
-            <span class="cost">⚡15 🔩10</span>
-        </button>
-    </div>
+    <div class="message" id="message"></div>
 
     <script>
-        // --- Game State ---
-        const GRID_SIZE = 10;
-        let state = {
-            energy: 100,
-            materials: 100,
-            units: 0,
-            maxUnits: 100,
-            grid: [], // 10x10 array
-            selectedBuild: null,
-            wave: 1,
-            lastTick: Date.now()
-        };
+        const words = [
+            { word: 'КОДЕК', hint: 'Программист, который пишет код' },
+            { word: 'ИГРОК', hint: 'Тот, кто играет в игры' },
+            { word: 'СЕРВЕР', hint: 'Компьютер, который хранит данные (6 букв)' },
+            { word: 'КЛАВИШ', hint: 'Кнопка на клавиатуре' },
+            { word: 'МОНИТОР', hint: 'Экран компьютера (7 букв)' },
+            { word: 'ПРОЦЕСС', hint: 'Выполняемая программа' },
+            { word: 'ПАМЯТЬ', hint: 'Хранилище данных в компьютере (6 букв)' },
+            { word: 'ДИСПЛЕЙ', hint: 'Экран устройства (7 букв)' },
+            { word: 'КУРСОР', hint: 'Указатель на экране (6 букв)' },
+            { word: 'ФАЙЛЫ', hint: 'Документы на компьютере' }
+        ];
 
-        const BUILDINGS = {
-            mine: { icon: '⛏️', costE: 20, costM: 30, hp: 50, type: 'mine' },
-            barracks: { icon: '🏰', costE: 30, costM: 50, hp: 100, type: 'barracks' },
-            turret: { icon: '🔫', costE: 40, costM: 40, hp: 80, type: 'turret', damage: 20 },
-            unit: { icon: '🤖', costE: 15, costM: 10, hp: 30, type: 'unit', damage: 10 },
-            base: { icon: '🏛️', costE: 0, costM: 0, hp: 500, type: 'base' }
-        };
+        let currentWord = null;
+        let cells = [];
 
-        // --- Audio System (Procedural) ---
-        let audioCtx = null;
-        let isAudioOn = false;
-        let musicInterval = null;
-
-        function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
-            if (audioCtx.state === 'suspended') {
-                audioCtx.resume();
-            }
-        }
-
-        function playTone(freq, type, duration, vol = 0.1) {
-            if (!isAudioOn || !audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start();
-            osc.stop(audioCtx.currentTime + duration);
-        }
-
-        function sfxBuild() { playTone(150, 'square', 0.15, 0.15); playTone(100, 'sine', 0.2, 0.2); }
-        function sfxError() { playTone(100, 'sawtooth', 0.3, 0.2); }
-        function sfxCombat() { playTone(800, 'square', 0.05, 0.05); playTone(600, 'sawtooth', 0.1, 0.1); }
-        function sfxResource() { playTone(1200, 'sine', 0.1, 0.05); }
-
-        function startMusic() {
-            if (!isAudioOn || !audioCtx) return;
-            let step = 0;
-            // Dark synthwave bassline: C2, C2, G2, F2
-            const bassline = [65.41, 65.41, 98.00, 87.31]; 
-            const arp = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63];
-            
-            musicInterval = setInterval(() => {
-                if (!isAudioOn) return;
-                // Bass
-                playTone(bassline[step % 4], 'sawtooth', 0.4, 0.08);
-                // Arpeggio every other step
-                if (step % 2 === 0) {
-                    playTone(arp[(step / 2) % arp.length], 'square', 0.2, 0.03);
-                }
-                // Hi-hat
-                if (step % 2 !== 0) {
-                    playTone(8000, 'square', 0.05, 0.02); 
-                }
-                step++;
-            }, 250); // 120 BPM approx
-        }
-
-        function toggleAudio() {
-            initAudio();
-            isAudioOn = !isAudioOn;
-            const btn = document.getElementById('audioBtn');
-            if (isAudioOn) {
-                btn.textContent = '🔊 ЗВУК';
-                btn.classList.add('active');
-                startMusic();
-            } else {
-                btn.textContent = '🔇 ЗВУК';
-                btn.classList.remove('active');
-                clearInterval(musicInterval);
-            }
-        }
-
-        // --- Game Logic ---
         function initGame() {
-            const saved = localStorage.getItem('tacticalNeonSave');
-            if (saved) {
-                state = JSON.parse(saved);
+            newWord();
+        }
+
+        function newWord() {
+            currentWord = words[Math.floor(Math.random() * words.length)];
+            document.getElementById('hint-text').textContent = currentWord.hint;
+            document.getElementById('message').textContent = '';
+            document.getElementById('message').className = 'message';
+            
+            const crossword = document.getElementById('crossword');
+            crossword.innerHTML = '';
+            cells = [];
+
+            for (let i = 0; i < currentWord.word.length; i++) {
+                const cell = document.createElement('input');
+                cell.type = 'text';
+                cell.maxLength = 1;
+                cell.className = 'cell';
+                cell.dataset.index = i;
+                
+                cell.addEventListener('input', (e) => {
+                    e.target.value = e.target.value.toUpperCase();
+                    if (e.target.value && i < currentWord.word.length - 1) {
+                        cells[i + 1].focus();
+                    }
+                });
+
+                cell.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && !e.target.value && i > 0) {
+                        cells[i - 1].focus();
+                    }
+                });
+
+                crossword.appendChild(cell);
+                cells.push(cell);
+            }
+
+            cells[0].focus();
+        }
+
+        function checkAnswer() {
+            const answer = cells.map(c => c.value).join('');
+            const message = document.getElementById('message');
+
+            if (answer.length < currentWord.word.length) {
+                message.textContent = 'Заполни все клетки!';
+                message.className = 'message error';
+                return;
+            }
+
+            if (answer === currentWord.word) {
+                message.textContent = '🎉 ПРАВИЛЬНО! Отлично!';
+                message.className = 'message success';
+                cells.forEach(c => c.classList.add('correct'));
+                
+                setTimeout(() => {
+                    if (confirm('Хочешь ещё одно слово?')) {
+                        newWord();
+                    }
+                }, 1500);
             } else {
-                // Initialize empty grid
-                for (let y = 0; y < GRID_SIZE; y++) {
-                    let row = [];
-                    for (let x = 0; x < GRID_SIZE; x++) {
-                        row.push(null);
-                    }
-                    state.grid.push(row);
-                }
-                // Place player base in center
-                state.grid[4][4] = { ...BUILDINGS.base, hp: BUILDINGS.base.hp };
-                state.grid[5][4] = { ...BUILDINGS.base, hp: BUILDINGS.base.hp };
-                state.grid[4][5] = { ...BUILDINGS.base, hp: BUILDINGS.base.hp };
-                state.grid[5][5] = { ...BUILDINGS.base, hp: BUILDINGS.base.hp };
-            }
-            renderGrid();
-            updateUI();
-            setInterval(gameTick, 1000); // 1 second ticks
-            setInterval(enemySpawn, 8000); // Enemy every 8 seconds
-        }
-
-        function saveGame() {
-            localStorage.setItem('tacticalNeonSave', JSON.stringify(state));
-        }
-
-        function gameTick() {
-            let incomeE = 0;
-            let incomeM = 0;
-            
-            // Calculate income and turret actions
-            for (let y = 0; y < GRID_SIZE; y++) {
-                for (let x = 0; x < GRID_SIZE; x++) {
-                    const cell = state.grid[y][x];
-                    if (!cell) continue;
-
-                    if (cell.type === 'mine') {
-                        incomeE += 5;
-                        incomeM += 2;
-                    } else if (cell.type === 'turret') {
-                        // Simple combat: damage adjacent enemy
-                        damageAdjacentEnemies(x, y, cell.damage);
-                    } else if (cell.type === 'unit') {
-                        // Units auto-attack adjacent enemies
-                        damageAdjacentEnemies(x, y, cell.damage);
-                    }
-                }
-            }
-
-            if (incomeE > 0 || incomeM > 0) {
-                state.energy += incomeE;
-                state.materials += incomeM;
-                if(isAudioOn && (incomeE > 0)) sfxResource();
-            }
-            
-            updateUI();
-            saveGame();
-        }
-
-        function damageAdjacentEnemies(x, y, damage) {
-            const dirs = [[0,1], [0,-1], [1,0], [-1,0]];
-            dirs.forEach(([dx, dy]) => {
-                const nx = x + dx, ny = y + dy;
-                if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE) {
-                    const target = state.grid[ny][nx];
-                    if (target && target.type === 'enemy') {
-                        target.hp -= damage;
-                        sfxCombat();
-                        if (target.hp <= 0) {
-                            state.grid[ny][nx] = null;
-                            state.energy += 10; // Bounty
-                            showNotification("Враг уничтожен! +10⚡");
-                        }
-                    }
-                }
-            });
-        }
-
-        function enemySpawn() {
-            // Spawn enemy at random edge
-            const edge = Math.floor(Math.random() * 4);
-            let ex, ey;
-            if (edge === 0) { ex = Math.floor(Math.random() * GRID_SIZE); ey = 0; }
-            else if (edge === 1) { ex = GRID_SIZE - 1; ey = Math.floor(Math.random() * GRID_SIZE); }
-            else if (edge === 2) { ex = Math.floor(Math.random() * GRID_SIZE); ey = GRID_SIZE - 1; }
-            else { ex = 0; ey = Math.floor(Math.random() * GRID_SIZE); }
-
-            if (!state.grid[ey][ex]) {
-                state.grid[ey][ex] = { type: 'enemy', icon: '👾', hp: 40 + (state.wave * 10), maxHp: 40 + (state.wave * 10) };
-                state.wave++;
-                showNotification(`Волна ${state.wave}: Вражеская высадка!`);
-                renderGrid();
+                message.textContent = '❌ Неправильно, попробуй ещё!';
+                message.className = 'message error';
+                cells.forEach(c => {
+                    c.classList.add('wrong');
+                    setTimeout(() => c.classList.remove('wrong'), 500);
+                });
             }
         }
 
-        // Enemy movement tick (slower than resource tick)
-        setInterval(() => {
-            let moved = false;
-            // Simple AI: move towards center (4.5, 4.5)
-            for (let y = 0; y < GRID_SIZE; y++) {
-                for (let x = 0; x < GRID_SIZE; x++) {
-                    if (state.grid[y][x] && state.grid[y][x].type === 'enemy') {
-                        // Find adjacent empty cell closer to center
-                        const dirs = [[0,1], [0,-1], [1,0], [-1,0]];
-                        let bestDir = null;
-                        let minDist = 999;
-                        
-                        dirs.forEach(([dx, dy]) => {
-                            const nx = x + dx, ny = y + dy;
-                            if (nx >= 0 && nx < GRID_SIZE && ny >= 0 && ny < GRID_SIZE) {
-                                if (!state.grid[ny][nx]) {
-                                    const dist = Math.abs(nx - 4.5) + Math.abs(ny - 4.5);
-                                    if (dist < minDist) {
-                                        minDist = dist;
-                                        bestDir = [nx, ny];
-                                    }
-                                } else if (state.grid[ny][nx].type === 'base' || state.grid[ny][nx].type === 'mine') {
-                                    // Attack building
-                                    state.grid[ny][nx].hp -= 10;
-                                    sfxCombat();
-                                    if (state.grid[ny][nx].hp <= 0) {
-                                        state.grid[ny][nx] = null;
-                                        showNotification("Здание разрушено!");
-                                    }
-                                }
-                            }
-                        });
-
-                        if (bestDir) {
-                            state.grid[bestDir[1]][bestDir[0]] = state.grid[y][x];
-                            state.grid[y][x] = null;
-                            moved = true;
-                        }
-                    }
-                }
+        // Enter key to check
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                checkAnswer();
             }
-            if (moved) renderGrid();
-        }, 1500);
+        });
 
-        function selectBuild(type) {
-            state.selectedBuild = state.selectedBuild === type ? null : type;
-            document.querySelectorAll('.build-btn').forEach(b => b.classList.remove('active'));
-            if (state.selectedBuild) {
-                document.getElementById(`btn-${type}`).classList.add('active');
-            }
-            renderGrid();
-        }
-
-        function handleCellClick(x, y) {
-            if (!state.selectedBuild) return;
-
-            const target = state.grid[y][x];
-            const buildData = BUILDINGS[state.selectedBuild];
-
-            // Check unit limit
-            if (buildData.type === 'unit' && state.units >= state.maxUnits) {
-                showNotification("Достигнут лимит в 100 юнитов!");
-                sfxError();
-                return;
-            }
-
-            // Check cost
-            if (state.energy < buildData.costE || state.materials < buildData.costM) {
-                showNotification("Недостаточно ресурсов!");
-                sfxError();
-                return;
-            }
-
-            // Check if cell is empty (or is base and we are placing unit on it? No, keep it simple: empty only)
-            if (target !== null) {
-                showNotification("Клетка занята!");
-                sfxError();
-                return;
-            }
-
-            // Build it
-            state.energy -= buildData.costE;
-            state.materials -= buildData.costM;
-            
-            if (buildData.type === 'unit') {
-                state.units++;
-            }
-
-            state.grid[y][x] = { ...buildData, hp: buildData.hp };
-            sfxBuild();
-            
-            state.selectedBuild = null;
-            document.querySelectorAll('.build-btn').forEach(b => b.classList.remove('active'));
-            
-            renderGrid();
-            updateUI();
-            saveGame();
-        }
-
-        function renderGrid() {
-            const gridEl = document.getElementById('grid');
-            gridEl.innerHTML = '';
-            
-            for (let y = 0; y < GRID_SIZE; y++) {
-                for (let x = 0; x < GRID_SIZE; x++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell';
-                    const data = state.grid[y][x];
-                    
-                    if (data) {
-                        cell.textContent = data.icon;
-                        if (data.type === 'enemy') cell.classList.add('enemy');
-                        if (data.type === 'base') cell.classList.add('base');
-                        
-                        // HP bar for buildings/units
-                        if (data.hp !== undefined && data.type !== 'enemy') {
-                            const hpPercent = (data.hp / BUILDINGS[data.type === 'unit' ? 'unit' : data.type].hp) * 100;
-                            cell.style.boxShadow = `inset 0 -${4 - (hpPercent/25)}px 0 rgba(0, 255, 157, 0.5)`;
-                        }
-                    }
-                    
-                    if (state.selectedBuild && !data) {
-                        cell.classList.add('selected');
-                    }
-                    
-                    cell.onclick = () => handleCellClick(x, y);
-                    gridEl.appendChild(cell);
-                }
-            }
-        }
-
-        function updateUI() {
-            document.getElementById('res-energy').textContent = Math.floor(state.energy);
-            document.getElementById('res-mat').textContent = Math.floor(state.materials);
-            document.getElementById('res-units').textContent = state.units;
-            
-            // Update button states based on affordability
-            for (const [key, data] of Object.entries(BUILDINGS)) {
-                if (key === 'base') continue;
-                const btn = document.getElementById(`btn-${key}`);
-                if (btn) {
-                    btn.disabled = (state.energy < data.costE || state.materials < data.costM) || (key === 'unit' && state.units >= state.maxUnits);
-                }
-            }
-        }
-
-        function showNotification(text) {
-            const el = document.getElementById('notification');
-            el.textContent = text;
-            el.classList.add('show');
-            setTimeout(() => el.classList.remove('show'), 2000);
-        }
-
-        // Start
         initGame();
     </script>
 </body>
