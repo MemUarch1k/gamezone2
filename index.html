@@ -254,24 +254,18 @@
     <script>
         let board = [];
         let solution = [];
+        let isFixed = []; // Массив, который хранит, какие клетки нельзя менять
         let selectedCell = null;
         let difficulty = 'easy';
         let timerInterval;
         let seconds = 0;
 
-        // Sudoku generator
         function generateSudoku() {
-            // Create empty 9x9 grid
             let grid = Array(9).fill().map(() => Array(9).fill(0));
-            
-            // Fill diagonal 3x3 boxes first (they are independent)
             for (let i = 0; i < 9; i += 3) {
                 fillBox(grid, i, i);
             }
-            
-            // Solve the rest
             solveSudoku(grid);
-            
             return grid;
         }
 
@@ -314,15 +308,12 @@
         }
 
         function isValid(grid, row, col, num) {
-            // Check row
             for (let x = 0; x < 9; x++) {
                 if (grid[row][x] === num) return false;
             }
-            // Check column
             for (let x = 0; x < 9; x++) {
                 if (grid[x][col] === num) return false;
             }
-            // Check 3x3 box
             let startRow = row - row % 3;
             let startCol = col - col % 3;
             for (let i = 0; i < 3; i++) {
@@ -333,21 +324,6 @@
             return true;
         }
 
-        function removeNumbers(grid, count) {
-            let cells = [];
-            for (let i = 0; i < 9; i++) {
-                for (let j = 0; j < 9; j++) {
-                    cells.push([i, j]);
-                }
-            }
-            shuffleArray(cells);
-            
-            for (let i = 0; i < count; i++) {
-                let [row, col] = cells[i];
-                grid[row][col] = 0;
-            }
-        }
-
         function setDifficulty(diff) {
             difficulty = diff;
             document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
@@ -356,15 +332,28 @@
         }
 
         function newGame() {
-            // Generate solution
             solution = generateSudoku();
             board = solution.map(row => [...row]);
             
-            // Remove numbers based on difficulty
-            let removeCount = difficulty === 'easy' ? 40 : difficulty === 'medium' ? 50 : 60;
-            removeNumbers(board, removeCount);
+            // Изначально все клетки считаем "фиксированными" (заданными)
+            isFixed = Array(9).fill().map(() => Array(9).fill(true));
             
-            // Reset timer
+            let removeCount = difficulty === 'easy' ? 40 : difficulty === 'medium' ? 50 : 60;
+            let cells = [];
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    cells.push([i, j]);
+                }
+            }
+            shuffleArray(cells);
+            
+            // Удаляем цифры и помечаем эти клетки как "редактируемые"
+            for (let i = 0; i < removeCount; i++) {
+                let [row, col] = cells[i];
+                board[row][col] = 0;
+                isFixed[row][col] = false;
+            }
+            
             seconds = 0;
             clearInterval(timerInterval);
             timerInterval = setInterval(updateTimer, 1000);
@@ -388,8 +377,7 @@
                     const value = board[row][col];
                     if (value !== 0) {
                         cell.textContent = value;
-                        // Check if it's a given number (from solution)
-                        if (solution[row][col] === value && isGiven(row, col)) {
+                        if (isFixed[row][col]) {
                             cell.classList.add('given');
                         } else {
                             cell.classList.add('user-input');
@@ -403,9 +391,7 @@
         }
 
         function isGiven(row, col) {
-            // Simple check: if we generated the puzzle, we know which cells were given
-            // For simplicity, we'll track this differently
-            return true; // Placeholder
+            return isFixed[row][col];
         }
 
         function selectCell(row, col) {
@@ -418,7 +404,6 @@
             cell.classList.add('selected');
             selectedCell = { row, col };
             
-            // Highlight same row, column, and box
             for (let i = 0; i < 9; i++) {
                 document.querySelector(`[data-row="${row}"][data-col="${i}"]`).classList.add('highlight');
                 document.querySelector(`[data-row="${i}"][data-col="${col}"]`).classList.add('highlight');
@@ -438,7 +423,7 @@
             
             const { row, col } = selectedCell;
             
-            // Can't change given numbers
+            // ТЕПЕРЬ ЭТО РАБОТАЕТ ПРАВИЛЬНО: блокируем только изначальные цифры
             if (isGiven(row, col)) return;
             
             board[row][col] = num;
@@ -496,7 +481,6 @@
                 `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
         }
 
-        // Keyboard input
         document.addEventListener('keydown', (e) => {
             if (!selectedCell) return;
             
@@ -508,7 +492,6 @@
             }
         });
 
-        // Start game
         newGame();
     </script>
 </body>
