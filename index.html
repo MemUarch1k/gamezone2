@@ -2,142 +2,141 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Неоновая Судоку</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Неоновая Судоку Pro</title>
+    <!-- Здесь будет подключен SDK Яндекс Игр при публикации -->
+    <!-- <script src="https://yandex.ru/games/sdk/v2"></script> -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            /* Дефолтный скин: Cyberpunk */
+            --neon-primary: #00ffff;
+            --neon-secondary: #ff00ff;
+            --neon-accent: #ffff00;
+            --bg-dark: #0a0a0f;
+            --bg-panel: #1a0a2e;
+            --grid-line: rgba(0, 255, 255, 0.2);
+        }
+
+        /* СКИНЫ */
+        body.skin-matrix {
+            --neon-primary: #00ff00;
+            --neon-secondary: #003300;
+            --neon-accent: #ccffcc;
+            --bg-dark: #000000;
+            --bg-panel: #051505;
+            --grid-line: rgba(0, 255, 0, 0.2);
+        }
+        body.skin-sunset {
+            --neon-primary: #ff9900;
+            --neon-secondary: #ff0055;
+            --neon-accent: #ffee00;
+            --bg-dark: #1a0505;
+            --bg-panel: #2e0a1a;
+            --grid-line: rgba(255, 153, 0, 0.2);
+        }
+        body.skin-ice {
+            --neon-primary: #aaddff;
+            --neon-secondary: #0055ff;
+            --neon-accent: #ffffff;
+            --bg-dark: #050a1a;
+            --bg-panel: #0a152e;
+            --grid-line: rgba(170, 221, 255, 0.2);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
 
         body {
             font-family: 'Orbitron', sans-serif;
-            background: linear-gradient(135deg, #0a0a0f 0%, #1a0a2e 100%);
+            background-color: var(--bg-dark);
             color: #fff;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 15px;
+            transition: background-color 0.5s ease;
         }
 
         h1 {
-            font-size: 2.5rem;
-            color: #00ffff;
-            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+            font-size: 2rem;
+            color: var(--neon-primary);
+            text-shadow: 0 0 10px var(--neon-primary), 0 0 20px var(--neon-secondary);
+            margin-bottom: 5px;
+            animation: neonPulse 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes neonPulse {
+            0% { text-shadow: 0 0 10px var(--neon-primary), 0 0 20px var(--neon-primary); filter: brightness(1); }
+            100% { text-shadow: 0 0 20px var(--neon-secondary), 0 0 40px var(--neon-secondary); filter: brightness(1.2); }
+        }
+
+        .level-info {
+            font-size: 1.2rem;
+            color: var(--neon-accent);
             margin-bottom: 10px;
-            animation: glow 2s ease-in-out infinite alternate;
+            text-shadow: 0 0 10px var(--neon-accent);
         }
 
-        @keyframes glow {
-            from { text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff; }
-            to { text-shadow: 0 0 20px #ff00ff, 0 0 40px #ff00ff; }
-        }
-
-        .controls {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .timer {
-            font-size: 1.5rem;
-            color: #ffff00;
-            text-shadow: 0 0 10px #ffff00;
+        .hint-counter {
+            font-size: 0.9rem;
+            color: #aaa;
             margin-bottom: 15px;
         }
-
-        .difficulty {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .diff-btn {
-            background: transparent;
-            border: 2px solid #ff00ff;
-            color: #ff00ff;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .diff-btn:hover, .diff-btn.active {
-            background: #ff00ff;
-            color: #000;
-            box-shadow: 0 0 15px #ff00ff;
-        }
+        .hint-counter span { color: var(--neon-accent); font-weight: bold; }
 
         .sudoku-grid {
             display: grid;
             grid-template-columns: repeat(9, 1fr);
             gap: 2px;
-            background: rgba(0, 255, 255, 0.2);
-            padding: 2px;
+            background: var(--grid-line);
+            padding: 3px;
             border-radius: 8px;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+            box-shadow: 0 0 25px var(--grid-line);
             margin-bottom: 20px;
+            border: 1px solid var(--neon-primary);
         }
 
         .cell {
-            width: 45px;
-            height: 45px;
-            background: rgba(10, 10, 15, 0.9);
+            width: 40px;
+            height: 40px;
+            background: var(--bg-dark);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
-            position: relative;
         }
 
-        .cell:hover {
-            background: rgba(0, 255, 255, 0.1);
+        .cell:hover { background: rgba(255, 255, 255, 0.05); }
+        .cell.selected { background: rgba(255, 0, 255, 0.2); box-shadow: inset 0 0 10px var(--neon-secondary); }
+        .cell.given { color: var(--neon-primary); text-shadow: 0 0 5px var(--neon-primary); }
+        .cell.user-input { color: var(--neon-secondary); }
+        .cell.error { color: #ff0000; animation: shake 0.4s; }
+        .cell.highlight { background: rgba(255, 255, 255, 0.03); }
+
+        /* Анимация мигания для подсказки */
+        @keyframes hintBlink {
+            0%, 100% { background: rgba(255, 255, 0, 0.1); color: var(--neon-accent); box-shadow: 0 0 5px var(--neon-accent); transform: scale(1); }
+            50% { background: rgba(255, 255, 0, 0.4); color: #fff; box-shadow: 0 0 20px var(--neon-accent); transform: scale(1.05); }
+        }
+        .cell.hint-blinking {
+            animation: hintBlink 0.6s infinite;
+            z-index: 10;
         }
 
-        .cell.selected {
-            background: rgba(255, 0, 255, 0.2);
-            box-shadow: inset 0 0 10px #ff00ff;
-        }
-
-        .cell.given {
-            color: #00ffff;
-            text-shadow: 0 0 5px #00ffff;
-        }
-
-        .cell.user-input {
-            color: #ff00ff;
-        }
-
-        .cell.error {
-            color: #ff0000;
-            animation: shake 0.5s;
-        }
-
-        .cell.highlight {
-            background: rgba(0, 255, 255, 0.05);
-        }
-
-        /* 3x3 block borders */
-        .cell:nth-child(3n) {
-            border-right: 2px solid rgba(0, 255, 255, 0.5);
-        }
+        .cell:nth-child(3n) { border-right: 2px solid var(--neon-primary); }
         .cell:nth-child(n+19):nth-child(-n+27),
-        .cell:nth-child(n+46):nth-child(-n+54) {
-            border-bottom: 2px solid rgba(0, 255, 255, 0.5);
-        }
+        .cell:nth-child(n+46):nth-child(-n+54) { border-bottom: 2px solid var(--neon-primary); }
 
         @keyframes shake {
             0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-3px); }
-            75% { transform: translateX(3px); }
+            25% { transform: translateX(-4px); }
+            75% { transform: translateX(4px); }
         }
 
         .number-pad {
@@ -145,88 +144,71 @@
             grid-template-columns: repeat(5, 1fr);
             gap: 8px;
             margin-bottom: 20px;
+            width: 100%;
+            max-width: 380px;
         }
 
         .num-btn {
-            width: 50px;
-            height: 50px;
-            background: rgba(0, 212, 255, 0.1);
-            border: 2px solid #00d4ff;
-            color: #00d4ff;
-            border-radius: 8px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--neon-primary);
+            color: var(--neon-primary);
+            border-radius: 6px;
             font-family: 'Orbitron', sans-serif;
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.2s;
         }
+        .num-btn:active { transform: scale(0.95); background: var(--neon-primary); color: #000; }
+        .num-btn.erase { border-color: #ff0055; color: #ff0055; }
+        .num-btn.erase:active { background: #ff0055; color: #fff; }
 
-        .num-btn:hover {
-            background: #00d4ff;
-            color: #000;
-            box-shadow: 0 0 15px #00d4ff;
-        }
-
-        .num-btn.erase {
-            background: rgba(255, 0, 85, 0.1);
-            border-color: #ff0055;
-            color: #ff0055;
-        }
-
-        .num-btn.erase:hover {
-            background: #ff0055;
-            color: #fff;
-            box-shadow: 0 0 15px #ff0055;
+        .controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 380px;
         }
 
         .btn {
+            flex: 1;
             background: transparent;
-            border: 2px solid #00ffff;
-            color: #00ffff;
-            padding: 10px 20px;
-            border-radius: 8px;
+            border: 1px solid var(--neon-secondary);
+            color: var(--neon-secondary);
+            padding: 12px 10px;
+            border-radius: 6px;
             font-family: 'Orbitron', sans-serif;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
+            min-width: 100px;
         }
-
-        .btn:hover {
-            background: #00ffff;
-            color: #000;
-            box-shadow: 0 0 15px #00ffff;
-        }
+        .btn:active { transform: scale(0.95); }
+        .btn:hover { background: var(--neon-secondary); color: #000; box-shadow: 0 0 15px var(--neon-secondary); }
+        .btn:disabled { opacity: 0.3; cursor: not-allowed; }
 
         .message {
             margin-top: 15px;
-            font-size: 1.1rem;
+            font-size: 1rem;
             min-height: 25px;
             text-align: center;
+            color: var(--neon-accent);
+            text-shadow: 0 0 10px var(--neon-accent);
         }
 
-        .message.success {
-            color: #00ff00;
-            text-shadow: 0 0 10px #00ff00;
+        @media (max-width: 400px) {
+            .cell { width: 34px; height: 34px; font-size: 1rem; }
+            h1 { font-size: 1.5rem; }
         }
-
-        @media (max-width: 600px) {
-            h1 { font-size: 1.8rem; }
-            .cell { width: 35px; height: 35px; font-size: 1rem; }
-            .num-btn { width: 40px; height: 40px; font-size: 1.1rem; }
-        }
-    </style>
-</head>
+    </style</head>
 <body>
-    <h1>НЕОНОВАЯ СУДОКУ</h1>
-    
-    <div class="timer" id="timer">00:00</div>
-
-    <div class="difficulty">
-        <button class="diff-btn active" onclick="setDifficulty('easy')">Легко</button>
-        <button class="diff-btn" onclick="setDifficulty('medium')">Средне</button>
-        <button class="diff-btn" onclick="setDifficulty('hard')">Сложно</button>
-    </div>
+    <h1>NEON SUDOKU</h1>
+    <div class="level-info">Уровень: <span id="level-display">1</span></div>
+    <div class="hint-counter">Подсказок сегодня: <span id="hint-count">3</span> / 3</div>
 
     <div class="sudoku-grid" id="grid"></div>
 
@@ -244,27 +226,86 @@
     </div>
 
     <div class="controls">
-        <button class="btn" onclick="checkSolution()">ПРОВЕРИТЬ</button>
-        <button class="btn" onclick="newGame()">НОВАЯ ИГРА</button>
-        <button class="btn" onclick="showHint()">ПОДСКАЗКА</button>
+        <button class="btn" onclick="requestHint()">💡 ПОДСКАЗКА</button>
+        <button class="btn" onclick="checkSolution()">✅ ПРОВЕРИТЬ</button>
     </div>
 
     <div class="message" id="message"></div>
 
     <script>
+        // --- Глобальные переменные ---
         let board = [];
         let solution = [];
-        let isFixed = []; // Массив, который хранит, какие клетки нельзя менять
+        let isFixed = [];
         let selectedCell = null;
-        let difficulty = 'easy';
-        let timerInterval;
-        let seconds = 0;
+        let currentLevel = 1;
+        
+        // Система подсказок
+        const MAX_DAILY_HINTS = 3;
+        let hintData = { date: new Date().toDateString(), count: 0 };
 
+        // Скины
+        const skins = ['', 'skin-matrix', 'skin-sunset', 'skin-ice'];
+
+        // --- Инициализация ---
+        function init() {
+            loadProgress();
+            applyRandomSkin();
+            updateHintUI();
+            newGame(false); // false = не сбрасывать уровень
+            
+            // Обработка клавиатуры
+            document.addEventListener('keydown', (e) => {
+                if (!selectedCell) return;
+                const num = parseInt(e.key);
+                if (num >= 1 && num <= 9) inputNumber(num);
+                else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') inputNumber(0);
+            });
+        }
+
+        function loadProgress() {
+            const savedLevel = localStorage.getItem('neonSudokuLevel');
+            if (savedLevel) currentLevel = parseInt(savedLevel);
+            
+            const savedHints = localStorage.getItem('neonSudokuHints');
+            if (savedHints) {
+                hintData = JSON.parse(savedHints);
+                // Сброс счетчика, если наступил новый день
+                if (hintData.date !== new Date().toDateString()) {
+                    hintData = { date: new Date().toDateString(), count: 0 };
+                    saveHints();
+                }
+            }
+            document.getElementById('level-display').textContent = currentLevel;
+        }
+
+        function saveProgress() {
+            localStorage.setItem('neonSudokuLevel', currentLevel);
+        }
+
+        function saveHints() {
+            localStorage.setItem('neonSudokuHints', JSON.stringify(hintData));
+            updateHintUI();
+        }
+
+        function updateHintUI() {
+            document.getElementById('hint-count').textContent = MAX_DAILY_HINTS - hintData.count;
+        }
+
+        function applyRandomSkin() {
+            // Убираем старые классы скинов
+            skins.forEach(s => { if(s) document.body.classList.remove(s); });
+            // Выбираем случайный
+            const randomSkin = skins[Math.floor(Math.random() * skins.length)];
+            if (randomSkin) {
+                document.body.classList.add(randomSkin);
+            }
+        }
+
+        // --- Генерация Судоку ---
         function generateSudoku() {
             let grid = Array(9).fill().map(() => Array(9).fill(0));
-            for (let i = 0; i < 9; i += 3) {
-                fillBox(grid, i, i);
-            }
+            for (let i = 0; i < 9; i += 3) fillBox(grid, i, i);
             solveSudoku(grid);
             return grid;
         }
@@ -310,12 +351,9 @@
         function isValid(grid, row, col, num) {
             for (let x = 0; x < 9; x++) {
                 if (grid[row][x] === num) return false;
-            }
-            for (let x = 0; x < 9; x++) {
                 if (grid[x][col] === num) return false;
             }
-            let startRow = row - row % 3;
-            let startCol = col - col % 3;
+            let startRow = row - row % 3, startCol = col - col % 3;
             for (let i = 0; i < 3; i++) {
                 for (let j = 0; j < 3; j++) {
                     if (grid[i + startRow][j + startCol] === num) return false;
@@ -324,43 +362,34 @@
             return true;
         }
 
-        function setDifficulty(diff) {
-            difficulty = diff;
-            document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            newGame();
-        }
+        function newGame(resetLevel = false) {
+            if (resetLevel) {
+                currentLevel = 1;
+                saveProgress();
+                document.getElementById('level-display').textContent = currentLevel;
+            }
 
-        function newGame() {
             solution = generateSudoku();
             board = solution.map(row => [...row]);
-            
-            // Изначально все клетки считаем "фиксированными" (заданными)
             isFixed = Array(9).fill().map(() => Array(9).fill(true));
-            
-            let removeCount = difficulty === 'easy' ? 40 : difficulty === 'medium' ? 50 : 60;
+
+            // Сложность растет с уровнем (максимум 60 удаленных клеток)
+            let removeCount = Math.min(35 + (currentLevel * 2), 60);
             let cells = [];
             for (let i = 0; i < 9; i++) {
-                for (let j = 0; j < 9; j++) {
-                    cells.push([i, j]);
-                }
+                for (let j = 0; j < 9; j++) cells.push([i, j]);
             }
             shuffleArray(cells);
-            
-            // Удаляем цифры и помечаем эти клетки как "редактируемые"
+
             for (let i = 0; i < removeCount; i++) {
                 let [row, col] = cells[i];
                 board[row][col] = 0;
                 isFixed[row][col] = false;
             }
-            
-            seconds = 0;
-            clearInterval(timerInterval);
-            timerInterval = setInterval(updateTimer, 1000);
-            updateTimer();
-            
+
+            selectedCell = null;
             renderGrid();
-            document.getElementById('message').textContent = '';
+            showMessage('');
         }
 
         function renderGrid() {
@@ -374,14 +403,9 @@
                     cell.dataset.row = row;
                     cell.dataset.col = col;
                     
-                    const value = board[row][col];
-                    if (value !== 0) {
-                        cell.textContent = value;
-                        if (isFixed[row][col]) {
-                            cell.classList.add('given');
-                        } else {
-                            cell.classList.add('user-input');
-                        }
+                    if (board[row][col] !== 0) {
+                        cell.textContent = board[row][col];
+                        cell.classList.add(isFixed[row][col] ? 'given' : 'user-input');
                     }
                     
                     cell.onclick = () => selectCell(row, col);
@@ -390,27 +414,21 @@
             }
         }
 
-        function isGiven(row, col) {
-            return isFixed[row][col];
-        }
-
         function selectCell(row, col) {
             document.querySelectorAll('.cell').forEach(c => {
-                c.classList.remove('selected');
-                c.classList.remove('highlight');
+                c.classList.remove('selected', 'highlight');
             });
             
             const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
             cell.classList.add('selected');
             selectedCell = { row, col };
             
+            // Подсветка
             for (let i = 0; i < 9; i++) {
                 document.querySelector(`[data-row="${row}"][data-col="${i}"]`).classList.add('highlight');
                 document.querySelector(`[data-row="${i}"][data-col="${col}"]`).classList.add('highlight');
             }
-            
-            let startRow = row - row % 3;
-            let startCol = col - col % 3;
+            let startRow = row - row % 3, startCol = col - col % 3;
             for (let i = 0; i < 3; i++) {
                 for (let j = 0; j < 3; j++) {
                     document.querySelector(`[data-row="${startRow + i}"][data-col="${startCol + j}"]`).classList.add('highlight');
@@ -419,18 +437,81 @@
         }
 
         function inputNumber(num) {
-            if (!selectedCell) return;
-            
-            const { row, col } = selectedCell;
-            
-            // ТЕПЕРЬ ЭТО РАБОТАЕТ ПРАВИЛЬНО: блокируем только изначальные цифры
-            if (isGiven(row, col)) return;
-            
-            board[row][col] = num;
+            if (!selectedCell || isFixed[selectedCell.row][selectedCell.col]) return;
+            board[selectedCell.row][selectedCell.col] = num;
             renderGrid();
-            selectCell(row, col);
+            selectCell(selectedCell.row, selectedCell.col);
         }
 
+        // --- УМНАЯ СИСТЕМА ПОДСКАЗОК ---
+        function requestHint() {
+            // 1. Проверка лимита
+            if (hintData.count >= MAX_DAILY_HINTS) {
+                // ЗДЕСЬ БУДЕТ ВЫЗОВ РЕКЛАМЫ ЯНДЕКС ИГР
+                // ysdk.adv.showRewardedVideo({ callbacks: { onRewarded: () => giveHint() } });
+                showMockAdAndGiveHint();
+                return;
+            }
+
+            // 2. Если лимит не исчерпан, даем бесплатно
+            hintData.count++;
+            saveHints();
+            executeHintAnimation();
+        }
+
+        // Имитация рекламы для тестов на компьютере
+        function showMockAdAndGiveHint() {
+            showMessage('📺 Загрузка рекламы... (посмотри 3 сек)');
+            setTimeout(() => {
+                showMessage('✅ Спасибо за просмотр! Подсказка активирована.');
+                executeHintAnimation();
+            }, 3000); // 3 секунды имитации рекламы
+        }
+
+        function executeHintAnimation() {
+            let targetRow, targetCol;
+
+            // Если клетка выбрана и пуста, используем её
+            if (selectedCell && board[selectedCell.row][selectedCell.col] === 0) {
+                targetRow = selectedCell.row;
+                targetCol = selectedCell.col;
+            } else {
+                // Иначе ищем случайную пустую клетку
+                let emptyCells = [];
+                for (let r = 0; r < 9; r++) {
+                    for (let c = 0; c < 9; c++) {
+                        if (board[r][c] === 0) emptyCells.push({r, c});
+                    }
+                }
+                if (emptyCells.length === 0) {
+                    showMessage('Поле уже заполнено!');
+                    return;
+                }
+                let randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                targetRow = randomCell.r;
+                targetCol = randomCell.c;
+                
+                // Автоматически выбираем эту клетку для удобства
+                selectedCell = { row: targetRow, col: targetCol };
+            }
+
+            // 3. Запускаем анимацию мигания
+            const cellEl = document.querySelector(`[data-row="${targetRow}"][data-col="${targetCol}"]`);
+            cellEl.classList.add('hint-blinking');
+            showMessage('🔍 Сканирование поля...');
+
+            // 4. Через 1.5 секунды показываем цифру
+            setTimeout(() => {
+                cellEl.classList.remove('hint-blinking');
+                board[targetRow][targetCol] = solution[targetRow][targetCol];
+                isFixed[targetRow][targetCol] = true; // Делаем её "данной", чтобы нельзя было стереть
+                renderGrid();
+                selectCell(targetRow, targetCol);
+                showMessage('✅ Подсказка применена!');
+            }, 1500);
+        }
+
+        // --- ПРОВЕРКА И ПЕРЕХОД ПО УРОВНЯМ ---
         function checkSolution() {
             let isComplete = true;
             let isCorrect = true;
@@ -443,56 +524,55 @@
                         isCorrect = false;
                         const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
                         cell.classList.add('error');
-                        setTimeout(() => cell.classList.remove('error'), 1000);
+                        setTimeout(() => cell.classList.remove('error'), 500);
                     }
                 }
             }
             
-            const message = document.getElementById('message');
             if (!isComplete) {
-                message.textContent = 'Заполни все клетки!';
-                message.className = 'message';
+                showMessage('⚠️ Заполни все клетки!');
             } else if (isCorrect) {
-                message.textContent = '🎉 ПРАВИЛЬНО! Отлично!';
-                message.className = 'message success';
-                clearInterval(timerInterval);
+                showMessage('🎉 УРОВЕНЬ ПРОЙДЕН!');
+                setTimeout(() => {
+                    levelUp();
+                }, 1500);
             } else {
-                message.textContent = 'Есть ошибки, проверь красные клетки';
-                message.className = 'message';
+                showMessage('❌ Есть ошибки, проверь красные клетки');
             }
         }
 
-        function showHint() {
-            if (!selectedCell) return;
-            
-            const { row, col } = selectedCell;
-            if (isGiven(row, col)) return;
-            
-            board[row][col] = solution[row][col];
-            renderGrid();
-            selectCell(row, col);
-        }
-
-        function updateTimer() {
-            seconds++;
-            const mins = Math.floor(seconds / 60);
-            const secs = seconds % 60;
-            document.getElementById('timer').textContent = 
-                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
-
-        document.addEventListener('keydown', (e) => {
-            if (!selectedCell) return;
-            
-            const num = parseInt(e.key);
-            if (num >= 1 && num <= 9) {
-                inputNumber(num);
-            } else if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') {
-                inputNumber(0);
+        function levelUp() {
+            // ПРОВЕРКА НА МЕЖСТРАНИЧНУЮ РЕКЛАМУ (каждые 3 уровня)
+            if (currentLevel % 3 === 0) {
+                showMessage('📺 Показ межстраничной рекламы...');
+                // ЗДЕСЬ БУДЕТ: ysdk.adv.showFullscreenAdv({ callbacks: { onClose: () => proceedToNextLevel() } });
+                
+                // Имитация для тестов:
+                setTimeout(() => {
+                    proceedToNextLevel();
+                }, 2000);
+            } else {
+                proceedToNextLevel();
             }
-        });
+        }
 
-        newGame();
+        function proceedToNextLevel() {
+            currentLevel++;
+            saveProgress();
+            document.getElementById('level-display').textContent = currentLevel;
+            
+            // Меняем скин при переходе на новый уровень для разнообразия
+            applyRandomSkin();
+            
+            newGame(false);
+        }
+
+        function showMessage(text) {
+            document.getElementById('message').textContent = text;
+        }
+
+        // Запуск
+        init();
     </script>
 </body>
 </html>
