@@ -18,7 +18,7 @@
 
         body.skin-matrix {
             --neon-primary: #00ff00;
-            --neon-secondary: #003300;
+            --neon-secondary: #88ff88;
             --neon-accent: #ccffcc;
             --bg-dark: #000000;
             --bg-panel: #051505;
@@ -102,7 +102,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s;
@@ -110,9 +110,25 @@
 
         .cell:hover { background: rgba(255, 255, 255, 0.05); }
         .cell.selected { background: rgba(255, 0, 255, 0.2); box-shadow: inset 0 0 10px var(--neon-secondary); }
-        .cell.given { color: var(--neon-primary); text-shadow: 0 0 5px var(--neon-primary); }
-        .cell.user-input { color: var(--neon-secondary); }
-        .cell.error { color: #ff0000; animation: shake 0.4s; }
+        
+        /* ДАННЫЕ цифры — цветные с мягким свечением */
+        .cell.given { 
+            color: var(--neon-primary); 
+            text-shadow: 0 0 5px var(--neon-primary), 0 0 10px var(--neon-primary);
+        }
+        
+        /* ПОЛЬЗОВАТЕЛЬСКИЕ цифры — ЯРКИЕ БЕЛЫЕ с сильным свечением */
+        .cell.user-input { 
+            color: #ffffff;
+            text-shadow: 
+                0 0 5px #ffffff,
+                0 0 10px var(--neon-secondary),
+                0 0 20px var(--neon-secondary),
+                0 0 30px var(--neon-secondary);
+            font-weight: 900;
+        }
+        
+        .cell.error { color: #ff0000 !important; text-shadow: 0 0 10px #ff0000 !important; animation: shake 0.4s; }
         .cell.highlight { background: rgba(255, 255, 255, 0.03); }
 
         @keyframes hintBlink {
@@ -195,13 +211,45 @@
             text-shadow: 0 0 10px var(--neon-accent);
         }
 
+        /* Кнопка звука */
+        .sound-toggle {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--neon-primary);
+            color: var(--neon-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            z-index: 100;
+        }
+        .sound-toggle:hover {
+            background: var(--neon-primary);
+            color: #000;
+            box-shadow: 0 0 15px var(--neon-primary);
+        }
+        .sound-toggle.muted {
+            opacity: 0.5;
+            border-color: #666;
+            color: #666;
+        }
+
         @media (max-width: 400px) {
-            .cell { width: 34px; height: 34px; font-size: 1rem; }
+            .cell { width: 34px; height: 34px; font-size: 1.1rem; }
             h1 { font-size: 1.5rem; }
         }
     </style>
 </head>
 <body>
+    <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔊</button>
+    
     <h1>NEON SUDOKU</h1>
     <div class="level-info">Уровень: <span id="level-display">1</span></div>
     <div class="hint-counter">Подсказок сегодня: <span id="hint-count">3</span> / 3</div>
@@ -229,6 +277,80 @@
     <div class="message" id="message"></div>
 
     <script>
+        // --- ЗВУКОВАЯ СИСТЕМА ---
+        let audioCtx = null;
+        let soundEnabled = true;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playTone(freq, type, duration, vol = 0.1) {
+            if (!soundEnabled || !audioCtx) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        // Звуки для разных действий
+        function sfxClick() { playTone(800, 'sine', 0.05, 0.05); }
+        function sfxInput() { playTone(600, 'triangle', 0.08, 0.08); playTone(900, 'sine', 0.05, 0.05); }
+        function sfxErase() { playTone(200, 'sawtooth', 0.1, 0.06); }
+        function sfxSelect() { playTone(400, 'sine', 0.04, 0.04); }
+        function sfxHintScan() { 
+            playTone(400, 'sine', 0.15, 0.06); 
+            setTimeout(() => playTone(600, 'sine', 0.15, 0.06), 150);
+            setTimeout(() => playTone(800, 'sine', 0.15, 0.06), 300);
+        }
+        function sfxHintDone() { 
+            playTone(523, 'triangle', 0.15, 0.08); // C
+            setTimeout(() => playTone(659, 'triangle', 0.15, 0.08), 100); // E
+            setTimeout(() => playTone(784, 'triangle', 0.2, 0.08), 200); // G
+        }
+        function sfxError() { 
+            playTone(150, 'sawtooth', 0.3, 0.1);
+            setTimeout(() => playTone(100, 'sawtooth', 0.3, 0.1), 150);
+        }
+        function sfxWin() {
+            const notes = [523, 659, 784, 1047]; // C E G C
+            notes.forEach((n, i) => {
+                setTimeout(() => playTone(n, 'triangle', 0.2, 0.1), i * 100);
+            });
+        }
+        function sfxLevelUp() {
+            playTone(800, 'square', 0.1, 0.08);
+            setTimeout(() => playTone(1200, 'square', 0.15, 0.08), 100);
+        }
+
+        function toggleSound() {
+            initAudio();
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggle');
+            if (soundEnabled) {
+                btn.textContent = '🔊';
+                btn.classList.remove('muted');
+                sfxClick();
+            } else {
+                btn.textContent = '🔇';
+                btn.classList.add('muted');
+            }
+        }
+
+        // --- ИГРОВАЯ ЛОГИКА ---
         let board = [];
         let solution = [];
         let isFixed = [];
@@ -241,6 +363,7 @@
         const skins = ['', 'skin-matrix', 'skin-sunset', 'skin-ice'];
 
         function init() {
+            initAudio();
             loadProgress();
             applyRandomSkin();
             updateHintUI();
@@ -408,6 +531,7 @@
             const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
             cell.classList.add('selected');
             selectedCell = { row, col };
+            sfxSelect();
             
             for (let i = 0; i < 9; i++) {
                 document.querySelector(`[data-row="${row}"][data-col="${i}"]`).classList.add('highlight');
@@ -423,12 +547,39 @@
 
         function inputNumber(num) {
             if (!selectedCell || isFixed[selectedCell.row][selectedCell.col]) return;
+            
             board[selectedCell.row][selectedCell.col] = num;
+            
+            // Звук
+            if (num === 0) {
+                sfxErase();
+            } else {
+                sfxInput();
+            }
+            
             renderGrid();
             selectCell(selectedCell.row, selectedCell.col);
+            
+            // АВТОПРОВЕРКА: если все клетки заполнены
+            checkIfComplete();
+        }
+
+        function checkIfComplete() {
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    if (board[row][col] === 0) return; // Есть пустые клетки
+                }
+            }
+            // Все клетки заполнены — автопроверка через 0.8 сек
+            setTimeout(() => {
+                showMessage('🔍 Автоматическая проверка...');
+                checkSolution();
+            }, 800);
         }
 
         function requestHint() {
+            initAudio(); // Активируем звук при первом клике
+            
             if (hintData.count >= MAX_DAILY_HINTS) {
                 showMockAdAndGiveHint();
                 return;
@@ -473,6 +624,7 @@
             const cellEl = document.querySelector(`[data-row="${targetRow}"][data-col="${targetCol}"]`);
             cellEl.classList.add('hint-blinking');
             showMessage('🔍 Сканирование поля...');
+            sfxHintScan();
 
             setTimeout(() => {
                 cellEl.classList.remove('hint-blinking');
@@ -481,6 +633,10 @@
                 renderGrid();
                 selectCell(targetRow, targetCol);
                 showMessage('✅ Подсказка применена!');
+                sfxHintDone();
+                
+                // Проверяем, не заполнено ли всё поле после подсказки
+                checkIfComplete();
             }, 1500);
         }
 
@@ -495,8 +651,10 @@
                     } else if (board[row][col] !== solution[row][col]) {
                         isCorrect = false;
                         const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-                        cell.classList.add('error');
-                        setTimeout(() => cell.classList.remove('error'), 500);
+                        if (cell) {
+                            cell.classList.add('error');
+                            setTimeout(() => cell.classList.remove('error'), 500);
+                        }
                     }
                 }
             }
@@ -505,15 +663,18 @@
                 showMessage('⚠️ Заполни все клетки!');
             } else if (isCorrect) {
                 showMessage('🎉 УРОВЕНЬ ПРОЙДЕН!');
+                sfxWin();
                 setTimeout(() => {
                     levelUp();
                 }, 1500);
             } else {
                 showMessage('❌ Есть ошибки, проверь красные клетки');
+                sfxError();
             }
         }
 
         function levelUp() {
+            sfxLevelUp();
             if (currentLevel % 3 === 0) {
                 showMessage('📺 Показ межстраничной рекламы...');
                 setTimeout(() => {
